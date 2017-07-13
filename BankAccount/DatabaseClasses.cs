@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -53,17 +54,30 @@ namespace BankAccount
             //and calls dispose in the finally
             using (var con = new SqlConnection() )
             {
+#if DEBUG
                 //TODO
-                con.ConnectionString = "";
+                con.ConnectionString =
+                    ConfigurationManager
+                    .ConnectionStrings[ "BankDBCon" ]
+                    .ConnectionString;
+#else
+                con.ConnectionString = "production string";
+#endif
 
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = con;
-                cmd.CommandText = "query here...";
-                //add parameters 
+                cmd.CommandText = "INSERT INTO Customer(FirstName, LastName, Address, Email)"
+                    + " VALUES(@FName, @LName, @Address, @Email)";
 
                 ////if this was a stored procedure
                 //cmd.CommandType = CommandType.StoredProcedure;
-                //cmd.CommandText = "StoredProdedure name here...";
+                //cmd.CommandText = "INSERT_Customer";
+
+                //add parameters
+                cmd.Parameters.AddWithValue("@FName", c.FirstName);
+                cmd.Parameters.AddWithValue("@LName", c.LastName);
+                cmd.Parameters.AddWithValue("@Address", c.Address);
+                cmd.Parameters.AddWithValue("@Email", c.Email);
 
                 int rows = cmd.ExecuteNonQuery(); // do something with rows, if necessary
 
